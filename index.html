@@ -150,7 +150,10 @@ const lot=id=>'LOT '+String(id).padStart(3,'0');
 function badge(){document.getElementById('cartCount').textContent=cart.length;}
 const BOOT=`<svg class="boot" viewBox="0 0 180 180" fill="none" stroke="currentColor" stroke-width="3.4"><path d="M112 28 Q130 18 148 28 L148 116 L160 150 Q164 161 153 163 L131 163 L126 140 Q116 150 78 152 L34 152 Q22 152 24 143 L30 130 Q44 118 78 116 L108 110 L112 32 Z" fill="currentColor" fill-opacity=".10"/></svg>`;
 const shot=p=>{const u=p&&p.photos&&p.photos[0];return `<div class="shot">${u?`<img src="${esc(u)}" alt="${esc(p.brand||'')} ${esc(p.material||'')} western boots" loading="lazy">`:BOOT}</div>`;};
-const WID=/(AAAA|AAA|AA|BB|A|B|C|DD|D|EEEE|EEE|EE|E|[2-6]E)/i;
+const WID=/(AAAA|AAA|AA|BB|A|B|C|DD|D|EEEE|EEE|EE|E|[2-6]E|M|N|W)/i;
+const WLADDER=['AAAA','AAA','AA','A','B','C','D','E','EE','EEE','EEEE'];
+function menToWomenWidth(w){ w=(w||'').toUpperCase(); const map={M:'B',N:'A',W:'D'}; if(map[w])return map[w]; const i=WLADDER.indexOf(w); return i<0?'':WLADDER[Math.max(0,i-2)]; }
+function womensFromMens(size,width){ return {ws:(size!=null)?+(Number(size)+1.5).toFixed(1):null, ww:menToWomenWidth(width)}; }
 function parseSizeJS(s){const m=String(s||'').trim().match(new RegExp('^(\\d+(?:\\.\\d+)?)\\s*'+WID.source+'?$','i'));return m?{size:parseFloat(m[1]),width:(m[2]||'').toUpperCase()}:{size:null,width:''};}
 
 function setMeta(title,desc,product){
@@ -469,8 +472,11 @@ async function saveItem(){
   const photos=g('a_photos').split(/\n+/).map(x=>x.trim()).filter(Boolean).slice(0,30);
   const wsz=parseFloat(g('a_wsize'));
   const rec={gender:g('a_gender')||'M',brand:g('a_brand'),size:size,width:(g('a_width')||width||'').toUpperCase(),
-    material:g('a_leather'),price:parseFloat(g('a_price'))||null,title:g('a_title'),notes:g('a_notes'),
-    photos,women_size:(g('a_gender')==='M'&&wsz)?wsz:null,women_width:null,suggest:[]};
+    material:g('a_leather'),price:parseFloat(g('a_price'))||null,title:g('a_title'),notes:g('a_notes'),photos,suggest:[]};
+  const isM=g('a_gender')==='M';
+  const autoW=(isM&&size!=null)?womensFromMens(size,rec.width):{ws:null,ww:null};
+  rec.women_size=isM?(wsz>0?wsz:autoW.ws):null;
+  rec.women_width=isM?autoW.ww:null;
   const miss=[]; if(!photos.length)miss.push('photos'); if(!rec.price||rec.price<=0)miss.push('price');
   if(!rec.brand)miss.push('brand'); if(!rec.size)miss.push('size'); if(!rec.width)miss.push('width');
   rec.missing=miss; rec.status=miss.length?'draft':'published';
@@ -515,8 +521,9 @@ function extract(r){
   const brand=(r['Brand']||'').trim();
   const miss=[];if(!photos.length)miss.push('photos');if(!price||price<=0)miss.push('price');
   if(!brand||brand.toLowerCase()==='unknown')miss.push('brand');if(size==null)miss.push('size');if(!width)miss.push('width');
+  const wc=(gender==='M'&&size!=null)?womensFromMens(size,width):{ws:null,ww:null};
   return {gender,brand,title,size,width,material:(r['Material']||'').trim(),price,notes:desc,
-    photos:[...new Set(photos)].slice(0,30),women_size:null,women_width:null,suggest:[],missing:miss,status:miss.length?'draft':'published'};
+    photos:[...new Set(photos)].slice(0,30),women_size:wc.ws,women_width:wc.ww,suggest:[],missing:miss,status:miss.length?'draft':'published'};
 }
 function csvPreview(){
   const file=document.getElementById('csvfile').files[0];if(!file)return;
