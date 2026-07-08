@@ -24,7 +24,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Ultra&family=Work+Sans:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root{ --sand:#ece3d0; --sand-2:#f4eddd; --ink:#2a2018; --ink-soft:#6f6151;
+  :root{ --sand:#ece3d0; --sand-2:#f4eddd; --ink:#241c14; --ink-soft:#4d4231;
     --saddle:#9a5a2b; --night:#241c15; --night-2:#2f251b; --turq:#2f8f86; --brass:#c79a52; --oxblood:#85362a; --line:#d0c4ab; --need:#b23b2a; }
   *{box-sizing:border-box;}
   body{margin:0;background:var(--sand);color:var(--ink);font-family:"Work Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;}
@@ -124,10 +124,10 @@
 <body>
 <header class="hero" id="hero">
   <nav class="topbar" aria-label="Main">
-    <a class="navbtn" onclick="go('catalog')"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8M5 10v10h14V10"/></svg>Home</a>
-    <a class="navbtn" onclick="go('contact')"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4z"/><path d="M4 6l8 6 8-6"/></svg>Contact</a>
-    <a class="navbtn" onclick="go('cart')"><svg viewBox="0 0 24 24"><path d="M4 5h2l2 11h10l2-8H7"/><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/></svg>Cart · <span id="cartCount">0</span></a>
-    <a class="navbtn" onclick="go('admin')"><svg viewBox="0 0 24 24"><path d="M12 3l8 4v5c0 5-3.5 8-8 9-4.5-1-8-4-8-9V7z"/></svg>Admin</a>
+    <a class="navbtn" onclick="go('catalog')"><svg viewBox="0 0 24 24"><path d="M4 11.5 12 4l8 7.5M6 10.5V20h12v-9.5" stroke-linejoin="round"/></svg>Home</a>
+    <a class="navbtn" onclick="go('contact')"><svg viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="13" rx="1.5"/><path d="M4.5 7l7.5 5.5L19.5 7"/></svg>Contact</a>
+    <a class="navbtn" onclick="go('cart')"><svg viewBox="0 0 24 24"><path d="M7 8h10l-1 11H8L7 8z" stroke-linejoin="round"/><path d="M9.5 8a2.5 2.5 0 0 1 5 0"/></svg>Cart · <span id="cartCount">0</span></a>
+    <a class="navbtn" onclick="go('admin')"><svg viewBox="0 0 24 24"><path d="M12 3.5l7 3v5c0 4.5-3 7-7 8.5-4-1.5-7-4-7-8.5v-5z" stroke-linejoin="round"/><path d="M9.3 12l1.8 1.8 3.6-3.8"/></svg>Admin</a>
   </nav>
 </header>
 
@@ -191,7 +191,7 @@ function search(){
   return out.sort((a,b)=>a.brand.localeCompare(b.brand)||(a.dsize||0)-(b.dsize||0));
 }
 function priceCart(items){const sub=items.reduce((s,p)=>s+p.price,0);
-  if(!insTouched) insVal=sub>=300?10:5;
+  if(!insTouched) insVal=sub>250?10:5;
   return {subtotal:+sub.toFixed(2), insurance:+(insVal||0), total:+(sub+(+insVal||0)).toFixed(2)};}
 
 function go(v,a){({catalog:catalogView,product:productView,cart:cartView,receipt:receiptView,admin:adminView,contact:contactView}[v])(a);window.scrollTo(0,0);}
@@ -207,14 +207,13 @@ function catalogView(){
   setMeta("Dan's Boot Sale — Vintage & Exotic Western Boots","Vintage and exotic western boots, inspected and specced by hand. Free USA shipping and returns.",null);
   const items=search();
   V().innerHTML=`
-    <div class="searchtop"><input type="search" id="topsearch" placeholder="Search boots — brand, leather, keyword…" value="${esc(filt.brand)}" oninput="setBrand(this.value)"></div>
-    <h1 class="tag">Vintage &amp; exotic western boots · one pair each</h1>
     ${POLICIES}
     <div class="controls">
-      <div class="ctl-label">Department</div>
+      <div class="ctl-label">Size type</div>
       <div class="group">
         <button class="seg ${filt.gender==='M'?'active':''}" onclick="setGender('M')">Men's</button>
         <button class="seg ${filt.gender==='W'?'active':''}" onclick="setGender('W')">Women's</button>
+        <input type="search" id="topsearch" placeholder="Search brand, leather, keyword…" value="${esc(filt.brand)}" oninput="setBrand(this.value)" style="flex:1;min-width:180px;font-family:'Work Sans';font-size:14px;padding:8px 12px;border:1px solid var(--saddle);background:#fff;border-radius:4px;color:var(--ink)">
       </div>
       <div class="ctl-label" style="margin-top:16px">Size · ${filt.gender==='M'?"Men's":"Women's"}</div>
       <div class="group sizes">${sizeButtons(filt.gender)}</div>
@@ -280,7 +279,7 @@ function cartView(){
     <div class="group"><label class="inline"><input type="radio" name="ins" value="0" ${pr.insurance===0?'checked':''} onchange="setIns(0)"> None</label>
       <label class="inline"><input type="radio" name="ins" value="5" ${pr.insurance===5?'checked':''} onchange="setIns(5)"> $5</label>
       <label class="inline"><input type="radio" name="ins" value="10" ${pr.insurance===10?'checked':''} onchange="setIns(10)"> $10</label></div>
-    <p class="muted" style="text-transform:none;letter-spacing:0">Auto-selected by order value — deselect or change anytime.</p>
+    <p class="muted" style="text-transform:none;letter-spacing:0">Auto-selected: $5 for orders under $250, $10 for $250 and over. Change or remove anytime.</p>
 
     <h3 class="ctl-label" style="margin-top:18px">Preferred carrier</h3>
     <fieldset><legend>Choose any</legend>
@@ -289,6 +288,9 @@ function cartView(){
       <label class="inline"><input type="checkbox" class="f_carr" value="UPS"> UPS</label>
       <label class="inline"><input type="checkbox" class="f_carr" value="FedEx"> FedEx</label></fieldset>
 
+    <h3 class="ctl-label" style="margin-top:18px">Shipping outside the USA?</h3>
+    <p class="muted" style="text-transform:none;letter-spacing:0">Text Dan for a shipping quote before you order.</p>
+    <a class="btn turq" href="sms:${PHONE_INTL}?&body=Hi%20Dan,%20I'd%20like%20to%20ship%20internationally.%20My%20cart:%20${encodeURIComponent(items.map(p=>p.brand+' '+lot(p.id)).join(', '))}">🌎 Shipping internationally? Text Dan</a>
     <h3 class="ctl-label" style="margin-top:18px">Shipping address</h3>
     <div class="formgrid">
       <label>First name *<input id="s_first"></label><label>Last name *<input id="s_last"></label>
@@ -297,7 +299,6 @@ function cartView(){
       <label>State *<input id="s_state"></label><label>ZIP *<input id="s_zip"></label>
       <label>Country *<input id="s_country" value="USA"></label>
     </div>
-    <a class="btn turq" href="sms:${PHONE_INTL}?&body=Hi%20Dan,%20I'd%20like%20to%20ship%20internationally.%20My%20cart:%20${encodeURIComponent(items.map(p=>p.brand+' '+lot(p.id)).join(', '))}">🌎 Shipping internationally? Text Dan</a>
 
     <h3 class="ctl-label" style="margin-top:22px">Preferred contact method</h3>
     <div class="group"><label class="inline"><input type="radio" name="cm" value="Text" checked onchange="setCM('Text')"> Text</label>
@@ -307,7 +308,7 @@ function cartView(){
 
     <h3 class="ctl-label" style="margin-top:6px">Preferred payment method</h3>
     <p class="muted" style="text-transform:none;letter-spacing:0">We only record your preference — no account details are entered here.</p>
-    <div class="formgrid"><label>Method<select id="f_pm"><option>Zelle</option><option>PayPal</option><option>Cash App</option><option>Venmo</option></select></label></div>
+    <div class="formgrid"><label>Method<select id="f_pm"><option>Zelle</option><option>PayPal</option><option>PayPal Goods &amp; Services</option><option>Cash App</option><option>Venmo</option><option>Venmo Goods &amp; Services</option></select></label></div>
 
     <button class="btn block" style="margin-top:10px" onclick="commit()">Commit to purchase</button>`;
   setCM('Text');
